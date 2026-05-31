@@ -727,6 +727,30 @@ class File3DUSDZ(ComfyTypeIO):
     Type = File3D
 
 
+@comfytype(io_type="FILE_3D_PLY")
+class File3DPLY(ComfyTypeIO):
+    """PLY format 3D file - point cloud or Gaussian splat."""
+    Type = File3D
+
+
+@comfytype(io_type="FILE_3D_SPLAT")
+class File3DSPLAT(ComfyTypeIO):
+    """SPLAT format 3D file - 3D Gaussian splat."""
+    Type = File3D
+
+
+@comfytype(io_type="FILE_3D_SPZ")
+class File3DSPZ(ComfyTypeIO):
+    """SPZ format 3D file - compressed 3D Gaussian splat."""
+    Type = File3D
+
+
+@comfytype(io_type="FILE_3D_KSPLAT")
+class File3DKSPLAT(ComfyTypeIO):
+    """KSPLAT format 3D file - 3D Gaussian splat."""
+    Type = File3D
+
+
 @comfytype(io_type="HOOKS")
 class Hooks(ComfyTypeIO):
     if TYPE_CHECKING:
@@ -762,12 +786,30 @@ class Accumulation(ComfyTypeIO):
 @comfytype(io_type="LOAD3D_CAMERA")
 class Load3DCamera(ComfyTypeIO):
     class CameraInfo(TypedDict):
-        position: dict[str, float | int]
-        target: dict[str, float | int]
-        zoom: int
-        cameraType: str
+        # Coordinate system: right-handed, Y-up, camera looks down -Z
+        position: dict[str, float | int]  # scene units
+        target: dict[str, float | int]  # scene units; OrbitControls focus point
+        zoom: float | int  # dimensionless, 1 = 100%
+        cameraType: str  # 'perspective' | 'orthographic'
+        quaternion: NotRequired[dict[str, float | int]]  # normalized, dimensionless; camera world rotation
+        fov: NotRequired[float | int]  # degrees, vertical FOV (perspective only)
+        aspect: NotRequired[float | int]  # width / height (perspective only)
+        near: NotRequired[float | int]  # scene units
+        far: NotRequired[float | int]  # scene units
+        frustum: NotRequired[dict[str, float | int]]  # orthographic only: {left, right, top, bottom} in scene units
 
     Type = CameraInfo
+
+
+@comfytype(io_type="LOAD3D_MODEL_INFO")
+class Load3DModelInfo(ComfyTypeIO):
+    class Model3DTransform(TypedDict):
+        # Coordinate system: right-handed, Y-up, world space
+        position: dict[str, float | int]  # scene units
+        quaternion: dict[str, float | int]  # normalized, dimensionless; world rotation
+        scale: dict[str, float | int]  # dimensionless multiplier
+
+    Type = list[Model3DTransform]
 
 
 @comfytype(io_type="LOAD_3D")
@@ -779,6 +821,7 @@ class Load3D(ComfyTypeIO):
         normal: str
         camera_info: Load3DCamera.CameraInfo
         recording: NotRequired[str]
+        model_3d_info: NotRequired[list[Load3DModelInfo.Model3DTransform]]
 
     Type = Model3DDict
 
@@ -2284,6 +2327,10 @@ __all__ = [
     "File3DOBJ",
     "File3DSTL",
     "File3DUSDZ",
+    "File3DPLY",
+    "File3DSPLAT",
+    "File3DSPZ",
+    "File3DKSPLAT",
     "Hooks",
     "HookKeyframes",
     "TimestepsRange",
@@ -2291,6 +2338,7 @@ __all__ = [
     "FlowControl",
     "Accumulation",
     "Load3DCamera",
+    "Load3DModelInfo",
     "Load3D",
     "Load3DAnimation",
     "Photomaker",
